@@ -6,9 +6,9 @@ class TeacherTest {
 
     @Test
     public void testCompareTo() {
-        Teacher teacher = new Teacher("f", "l");
-        Teacher teacher2 = new Teacher("f2", "l2");
-        Student student = new Student("f", "l", Student.StudentType.JUNIOR);
+        Teacher teacher = new Teacher("name");
+        Teacher teacher2 = new Teacher("name");
+        Student student = new Student("name", Student.Grade.JUNIOR);
 
         assertEquals(teacher.compareTo(teacher2), 0);
         assertEquals(teacher.compareTo(student), 1);

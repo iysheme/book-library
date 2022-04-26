@@ -6,10 +6,10 @@ class StudentTest {
 
     @Test
     public void testCompareTo() {
-        Student student1 = new Student("f", "l", Student.StudentType.JUNIOR);
-        Student student2 = new Student("f", "l", Student.StudentType.SENIOR);
+        Student student1 = new Student("name", Student.Grade.JUNIOR);
+        Student student2 = new Student("name", Student.Grade.SENIOR);
 
-        Teacher teacher = new Teacher("f", "l");
+        Teacher teacher = new Teacher("name");
 
         assertEquals(student1.compareTo(student2), -1);
         assertEquals(student2.compareTo(student1), 1);

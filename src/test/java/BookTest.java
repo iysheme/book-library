@@ -1,45 +1,68 @@
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BookTest {
+    private Book book;
 
-    @Test
-    public void testSetStatus() {
-        Book book = new Book("Test Title", "Test Author");
-        book.setStatus(Book.BookStatus.BORROWED);
+    @BeforeAll
+    public static void setupAll() {
+        System.out.println("Beginning test methods for Book class...");
+    }
 
-        assertEquals(book.getStatus(), Book.BookStatus.BORROWED);
+    @BeforeEach
+    public void setupEach() {
+        book = new Book("title", "author", 2000);
     }
 
     @Test
     public void testGetStatus() {
-        Book book = new Book("Test Title", "Test Author");
+        assertEquals(book.getStatus(), Book.Status.AVAILABLE);
+    }
 
-        assertEquals(book.getStatus(), Book.BookStatus.AVAILABLE);
+    @Test
+    public void testSetStatus() {
+        book.setStatus(Book.Status.BORROWED);
+
+        assertEquals(book.getStatus(), Book.Status.BORROWED);
+    }
+
+    @Test
+    public void testHasWaitingUsers() {
+        assertFalse(book.hasWaitingUsers());
     }
 
     @Test
     public void testAddToWaitingList() {
-        Book book = new Book("Test Title", "Test Author");
-        User user = new Student("f", "l", Student.StudentType.JUNIOR);
+        User user = new Student("name", Student.Grade.JUNIOR);
         book.addToWaitingList(user);
         assertTrue(book.hasWaitingUsers());
     }
 
     @Test
     public void testGetNextWaitingListUser() {
-        Book book = new Book("Test Title", "Test Author");
-        User user = new Student("f", "l", Student.StudentType.JUNIOR);
-        book.addToWaitingList(user);
-        assertEquals(book.getNextWaitingListUser(), user);
+        User user1 = new Student("name", Student.Grade.JUNIOR);
+        book.addToWaitingList(user1);
+
+        assertEquals(book.getNextWaitingListUser(), user1);
+
+        User user2 = new Student("name", Student.Grade.SENIOR);
+        book.addToWaitingList(user2);
+
+        assertEquals(book.getNextWaitingListUser(), user2);
+
+        User user3 = new Teacher("name");
+        book.addToWaitingList(user3);
+
+        assertEquals(book.getNextWaitingListUser(), user3);
     }
 
-    @Test
-    public void testHasWaitingUsers() {
-        Book book = new Book("Test Title", "Test Author");
-        assertFalse(book.hasWaitingUsers());
+    @AfterAll
+    public static void tearDownAll() {
+        System.out.println("Finished test methods for Book class!");
     }
 
 }

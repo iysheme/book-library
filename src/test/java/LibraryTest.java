@@ -1,68 +1,136 @@
+import org.apache.log4j.Logger;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LibraryTest {
+    private static final Logger logger = Logger.getLogger(LibraryTest.class.getName());
 
-    @Test
-    public void testAddBook() {
-        Library library = Library.getInstance();
-        Book book = new Book("Test Title", "Test Author");
-        library.addBook(book);
+    private Library library;
 
-        assertTrue(library.hasBooks());
+    @BeforeAll
+    public static void setupAll() {
+        //BasicConfigurator.configure();
+
+        System.out.println("Beginning test methods for Library class...");
+    }
+
+    @BeforeEach
+    public void setupEach() {
+        library = Library.getInstance();
     }
 
     @Test
-    public void testGetRandomBook() {
-        Library library = Library.getInstance();
-        Book book = new Book("Test Title", "Test Author");
-        library.addBook(book);
-        Book book1 = library.getRandomBook();
-        assertTrue(book.equals(book1));
+    public void testAddUser() {
+        User user = new Teacher("name");
+        library.addUser(user);
+        library.addUser(user);
+
+        assertTrue(library.hasUsers());
     }
 
     @Test
-    public void testReturnBook() {
-        Library library = Library.getInstance();
-        Book book = new Book("Test Title", "Test Author");
-        User teacher = new Teacher("f", "l");
-
-        library.addBook(book);
-        book.addToWaitingList(teacher);
-        library.giveBook(book, teacher);
-        library.returnBook(book, teacher);
-
-        assertTrue(library.hasBooks());
-    }
-
-    @Test
-    public void testReturnBooks() {
-        Library library = Library.getInstance();
-        Book book1 = new Book("Test Title", "Test Author");
-        Book book2 = new Book("Test Title", "Test Author");
-        Book book3 = new Book("Test Title", "Test Author");
-
-        User teacher = new Teacher("f", "l");
-
-        library.addBook(book1); library.addBook(book2); library.addBook(book3);
-        book1.addToWaitingList(teacher); book2.addToWaitingList(teacher); book3.addToWaitingList(teacher);
-        library.giveBook(book1, teacher); library.giveBook(book2, teacher); library.giveBook(book3, teacher);
-        library.returnBooks(teacher);
-
-        assertTrue(library.hasBooks());
-    }
-
-    @Test
-    void addUsers() {
-        Library library = Library.getInstance();
+    void testAddUsers() {
         User[] users = new User[]{
-                new Teacher("f", "l"),
-                new Student("f", "l", Student.StudentType.SENIOR),
-                new Student("f", "l", Student.StudentType.JUNIOR),
+                new Teacher("name"),
+                new Student("name", Student.Grade.SENIOR),
+                new Student("name", Student.Grade.JUNIOR),
         };
         library.addUsers(users);
 
         assertTrue(library.hasUsers());
+    }
+
+    @Test
+    public void testAddBook() {
+        Book book = new Book("title", "author", 2000);
+        library.addBook(book);
+        library.addBook(book);
+
+        assertTrue(library.hasBooks());
+    }
+
+    @Test
+    void testAddBooks() {
+        Book[] books = new Book[]{
+                new Book("title", "author", 2000),
+                new Book("title", "author", 2000),
+                new Book("title", "author", 2000),
+        };
+        library.addBooks(books);
+
+        assertTrue(library.hasBooks());
+    }
+
+    @Test
+    public void testRequestBook() {
+        Book book = new Book("title", "author", 2000);
+        User user = new Teacher("name");
+
+        library.addUser(user);
+        library.addBook(book);
+
+        library.requestBook(book, user);
+
+        assertTrue(book.hasWaitingUsers());
+    }
+
+    @Test
+    public void testGiveBook() {
+        Book book = new Book("title", "author", 2000);
+        User user = new Teacher("name");
+
+        library.addBook(book);
+        library.addUser(user);
+
+        library.requestBook(book, user);
+        library.giveBook(book, user);
+
+        assertEquals(book.getStatus(), Book.Status.BORROWED);
+        assertTrue(user.getBorrowedBooks().contains(book));
+    }
+
+    @Test
+    public void testReturnBook() {
+        Book book = new Book("title", "author", 2000);
+        User user = new Teacher("name");
+
+        library.addBook(book);
+        library.addUser(user);
+
+        library.returnBook(book, user);
+
+        assertEquals(book.getStatus(), Book.Status.AVAILABLE);
+        assertFalse(user.getBorrowedBooks().contains(book));
+    }
+
+    @Test
+    public void testReturnBooks() {
+        Book[] books = new Book[]{
+                new Book("title", "author", 2000),
+                new Book("title", "author", 2000),
+                new Book("title", "author", 2000),
+        };
+        User user = new Teacher("name");
+
+        library.addBooks(books);
+        library.addUser(user);
+
+        for (Book book : books) {
+            library.requestBook(book, user);
+            library.giveBook(book, user);
+        }
+
+        library.returnBooks(user);
+
+        assertTrue(user.getBorrowedBooks().isEmpty());
+    }
+
+    @AfterAll
+    public static void tearDownAll() {
+        System.out.println("Finished test methods for Library class!");
     }
 }

@@ -1,25 +1,25 @@
 public class Student extends AbstractUser implements Comparable<User> {
-    enum StudentType {
+    enum Grade {
         JUNIOR,
         SENIOR,
     }
 
-    private final StudentType studentType;
+    private final Grade grade;
 
-    public Student(String firstName, String lastName, StudentType studentType) {
-        super(firstName, lastName);
-        this.studentType = studentType;
+    public Student(String name, Grade grade) {
+        super(name);
+        this.grade = grade;
     }
 
     @Override
     public int compareTo(User user) {
         if (user instanceof Student) {
             Student student = (Student) user;
-            if (student.studentType == StudentType.SENIOR) {
-                if (studentType == StudentType.JUNIOR) return -1;
+            if (student.grade == Grade.SENIOR) {
+                if (grade == Grade.JUNIOR) return -1;
             }
             else {
-                if (studentType == StudentType.SENIOR) return 1;
+                if (grade == Grade.SENIOR) return 1;
             }
         }
         else {
@@ -31,9 +31,9 @@ public class Student extends AbstractUser implements Comparable<User> {
 
     @Override
     public String toString() {
-        return "Student{" +
+        return "Student(" +
                 super.toString() +
-                "studentType=" + studentType +
-                '}';
+                "Grade = " + grade +
+                ')';
     }
 }

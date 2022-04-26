@@ -1,14 +1,12 @@
 import java.util.ArrayList;
 
 public class AbstractUser implements User {
-    private String firstName;
-    private String lastName;
+    private String name;
 
-    private ArrayList<Book> borrowedBooks;
+    private final ArrayList<Book> borrowedBooks;
 
-    public AbstractUser(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public AbstractUser(String name) {
+        this.name = name;
 
         borrowedBooks = new ArrayList<>();
     }
@@ -25,7 +23,6 @@ public class AbstractUser implements User {
 
     @Override
     public String toString() {
-        return "FirstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'';
+        return "Name = '" + name + '\'';
     }
 }

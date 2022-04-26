@@ -1,7 +1,7 @@
 public class Teacher extends AbstractUser implements Comparable<User> {
 
-    public Teacher(String firstName, String lastName) {
-        super(firstName, lastName);
+    public Teacher(String name) {
+        super(name);
     }
 
     @Override
@@ -15,8 +15,8 @@ public class Teacher extends AbstractUser implements Comparable<User> {
 
     @Override
     public String toString() {
-        return "Teacher{" +
+        return "Teacher(" +
                 super.toString() +
-                '}';
+                ')';
     }
 }

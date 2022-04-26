@@ -2,19 +2,18 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.HashMap;
 
 public final class Library {
     private static final Library INSTANCE = new Library();
 
-    private final ArrayList<Book> books;
+    private final HashMap<Book, Integer> books;
     private final ArrayList<User> users;
 
     private static final Logger logger = Logger.getLogger(Library.class.getName());
 
     private Library() {
-        books = new ArrayList<>();
+        books = new HashMap<>();
         users = new ArrayList<>();
 
         BasicConfigurator.configure();
@@ -32,61 +31,109 @@ public final class Library {
         return users.size() != 0;
     }
 
-    public void addBook(Book book) {
-        books.add(book);
-        logger.debug("New book added to library");
+    public void addUser(User user) {
+        if (users.contains(user)) {
+            logger.warn(LogMessages.USER_EXISTS);
+        }
+        else {
+            users.add(user);
+            logger.info(LogMessages.NEW_USER_ADDED);
+        }
     }
 
-    public Book getRandomBook() {
-        return books.get(new Random().nextInt(books.size()));
+    public void addUsers(User[] users) {
+        for (User user : users) {
+            addUser(user);
+        }
+        logger.info(LogMessages.ADD_NEW_USERS);
+    }
+
+    public void addBook(Book book) {
+        if (books.containsKey(book)) {
+            books.put(book, books.get(book) + 1);
+            logger.warn(LogMessages.EXISTING_BOOK_ADDED);
+        }
+        else {
+            books.put(book, 1);
+            logger.info(LogMessages.NEW_BOOK_ADDED);
+        }
+    }
+
+    public void addBooks(Book[] books) {
+        for (Book book : books) {
+            addBook(book);
+        }
+        logger.info(LogMessages.ADD_NEW_BOOKS);
+    }
+
+    public boolean invalidate(Book book, User user) {
+        if (!users.contains(user)) {
+            logger.warn(LogMessages.USER_NOT_FOUND);
+            return true;
+        }
+
+        if (!books.containsKey(book)) {
+            logger.warn(LogMessages.BOOK_NOT_FOUND);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void requestBook(Book book, User user) {
+        if (invalidate(book, user)) return;
+
+        book.addToWaitingList(user);
+        logger.info(LogMessages.BOOK_REQUESTED);
+    }
+
+    public void giveBook(Book book, User user) {
+        if (invalidate(book, user)) return;
+
+        if (book.getStatus() == Book.Status.AVAILABLE) {
+            if (book.hasWaitingUsers()) {
+                User nextWaitingUser = book.getNextWaitingListUser();
+                if (nextWaitingUser == user) {
+                    nextWaitingUser.borrowBook(book);
+                    book.setStatus(Book.Status.BORROWED);
+                    books.put(book, books.get(book) - 1);
+
+                    logger.info(LogMessages.BORROW_BOOK);
+                }
+                else {
+                    logger.warn(LogMessages.BOOK_NOT_REQUESTED);
+                }
+            }
+            else {
+                logger.warn(LogMessages.BOOK_NOT_REQUESTED);
+            }
+        }
+        else {
+            logger.warn(LogMessages.BOOK_UNAVAILABLE);
+        }
     }
 
     public void returnBook(Book book, User user) {
+        if (invalidate(book, user)) return;
+
         user.getBorrowedBooks().remove(book);
-        book.setStatus(Book.BookStatus.AVAILABLE);
-        logger.debug("Book returned to library");
+        book.setStatus(Book.Status.AVAILABLE);
+        books.put(book, books.get(book) + 1);
+
+        logger.info(LogMessages.RETURN_ONE_BOOK);
     }
 
     public void returnBooks(User user) {
         ArrayList<Book> borrowedBooks = user.getBorrowedBooks();
-        for (int i = 0; i < borrowedBooks.size(); i++) {
-            Book book = borrowedBooks.get(i);
-            user.getBorrowedBooks().remove(book);
-            book.setStatus(Book.BookStatus.AVAILABLE);
+        for (Book book : borrowedBooks) {
+            book.setStatus(Book.Status.AVAILABLE);
         }
-        logger.debug("User returned all borrowed books to library");
-    }
+        borrowedBooks.clear();
 
-    public void giveBook(Book book, User user) {
-        if (book.getStatus() == Book.BookStatus.AVAILABLE && book.hasWaitingUsers()) {
-            User nextWaitingUser = book.getNextWaitingListUser();
-            if (nextWaitingUser == user) {
-                nextWaitingUser.borrowBook(book);
-                book.setStatus(Book.BookStatus.BORROWED);
-                logger.debug("User collected a book from library");
-            }
-        }
-    }
-
-    public void giveBooks() {
-        books.forEach(book -> {
-            if (book.getStatus() == Book.BookStatus.AVAILABLE && book.hasWaitingUsers()) {
-                User nextWaitingUser = book.getNextWaitingListUser();
-                nextWaitingUser.borrowBook(book);
-                book.setStatus(Book.BookStatus.BORROWED);
-                System.out.printf("%s collected %s\n", nextWaitingUser, book);
-            }
-        });
-    }
-
-    public void addUsers(User[] users) {
-        this.users.addAll(Arrays.asList(users));
-        for (User user : users) {
-            logger.debug("New user added to library");
-        }
+        logger.info(LogMessages.RETURN_ALL_BOOKS);
     }
 
     public void printBooks() {
-        books.forEach(System.out::println);
+        books.forEach( (book, occurrence) -> System.out.println(book + " has " + occurrence + " copies"));
     }
 }
